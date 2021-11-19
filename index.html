@@ -86,6 +86,10 @@
         let frustumSize = 30;
         let reye_index = 0, leye_index = 0, head_index = 0;
         let gui = new GUI();
+        let j
+        let data_json, data_json_length;
+        let loadStatus;
+        let modelindex = 0;
         let standardlist = {
             eyebrow_troubled_left: 0, eyebrow_troubled_right: 0, eyebrow_angry_left: 0, eyebrow_angry_right: 0, eyebrow_serious_left: 0, eyebrow_serious_right: 0
             , eyebrow_happy_left: 0, eyebrow_happy_right: 0, eyebrow_lowered_left: 0, eyebrow_lowered_right: 0, eyebrow_raised_left: 0, eyebrow_raised_right: 0, eye_wink_left: 0, eye_wink_right: 0
@@ -96,7 +100,8 @@
         Ammo().then(function (AmmoLib) {
 
             Ammo = AmmoLib;
-            init();
+            //init();
+            getjson();
             animate();
 
         });
@@ -131,6 +136,7 @@
 
             // model
 
+
             function onProgress(xhr) {
 
                 if (xhr.lengthComputable) {
@@ -142,7 +148,7 @@
 
             }
 
-            const modelFile = 'models/mmd/kizunaai/kizunaai.pmx';
+            const modelFile = data_json.modellist[modelindex].location;
             helper = new MMDAnimationHelper();
 
             const loader = new MMDLoader();
@@ -156,11 +162,13 @@
 
                 findeye_index();
                 initGui();
+                loadStatus = 1;
             }, onProgress, null);
 
             //
 
             window.addEventListener('resize', onWindowResize);
+            window.addEventListener('keypress',changemodel);
             const cameracontrols = new OrbitControls(camera, renderer.domElement);
             cameracontrols.minDistance = 10;
             cameracontrols.maxDistance = 100;
@@ -257,6 +265,91 @@
                 }
             }
         }
+
+        function getjson() {
+            var xmlhttp = new XMLHttpRequest();
+            var url = 'model_data.json';
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    data_json = JSON.parse(this.responseText);
+                    data_json_length = Object.keys(data_json.modellist).length - 1;
+                    console.log(data_json);
+                    init();
+                }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send();
+        }
+        function changemodel(event) {
+            
+            console.log(data_json.modellist.length);
+
+            if (event.key === "a" && modelindex != 0 && modelindex > 0) {
+                modelindex -= 1;
+                scene.remove(mesh);
+            gui.destroy();
+                function onProgress(xhr) {
+
+                    if (xhr.lengthComputable) {
+
+                        const percentComplete = xhr.loaded / xhr.total * 100;
+                        console.log(Math.round(percentComplete, 2) + '% downloaded');
+
+                    }
+
+                }
+
+                const modelFile = data_json.modellist[modelindex].location;
+                //helper = new MMDAnimationHelper();
+
+                const loader = new MMDLoader();
+
+                loader.load(modelFile, function (object) {
+
+                    mesh = object;
+                    mesh.position.y = - 10;
+
+                    scene.add(mesh);
+
+                    findeye_index();
+                    initGui();
+                    loadStatus = 1;
+                }, onProgress, null);
+            } else if (event.key === "d" && modelindex < (data_json.modellist.length - 1)) {
+                modelindex += 1;
+                scene.remove(mesh);
+            gui.destroy();
+                
+                function onProgress(xhr) {
+
+                    if (xhr.lengthComputable) {
+
+                        const percentComplete = xhr.loaded / xhr.total * 100;
+                        console.log(Math.round(percentComplete, 2) + '% downloaded');
+
+                    }
+
+                }
+
+                const modelFile = data_json.modellist[modelindex].location;
+                //helper = new MMDAnimationHelper();
+
+                const loader = new MMDLoader();
+
+                loader.load(modelFile, function (object) {
+
+                    mesh = object;
+                    mesh.position.y = - 10;
+
+                    scene.add(mesh);
+
+                    findeye_index();
+                    initGui();
+                    loadStatus = 1;
+                }, onProgress, null);
+            }
+        }
+
         //
         function animate() {
 
@@ -266,7 +359,10 @@
         }
 
         function render() {
-            effect.render(scene, camera);
+            if (loadStatus == 1) {
+                effect.render(scene, camera);
+            }
+
         }
 
     </script>
