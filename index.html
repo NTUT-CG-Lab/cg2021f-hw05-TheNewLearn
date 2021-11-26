@@ -99,6 +99,7 @@
             eye_raised_lower_eyelid_right: 0, eye_surprised_left: 0, eye_surprised_right: 0, iris_small_left: 0, iris_small_right: 0, mouth_aaa: 0, mouth_iii: 0, mouth_uuu: 0, mouth_eee: 0, mouth_ooo: 0
             , mouth_delta: 0, mouth_smirk: 0, mouth_raised_corner_left: 0, mouth_raised_corner_right: 0, mouth_lowered_corner_left: 0, mouth_lowered_corner_right: 0, iris_rotation_x: 0, iris_rotation_y: 0, head_x: 0, head_y: 0, head_z: 0
         };
+        var slist;
         Ammo().then(function (AmmoLib) {
 
             Ammo = AmmoLib;
@@ -195,7 +196,7 @@
         function initGui() {
 
             gui = new GUI();
-
+            var math = THREE.MathUtils;
             const controls = {};
             const keys = [];
             const guidata = [];
@@ -221,13 +222,9 @@
             }
             /*
             function initKeys() {
-
                 for (const key in standardlist) {
-
                     keys.push(key);
-
                 }
-
             }
             */
 
@@ -250,9 +247,22 @@
 
 
                     }
+                    else if(key == "head_x"){
+                        morphs.add(mesh.skeleton.bones[head_index].rotation,"x", math.degToRad (-15), math.degToRad (15),0.01).name(key);
+                        
+                    }
+                    else if(key == "head_y"){
+                        morphs.add(mesh.skeleton.bones[head_index].rotation,"y", math.degToRad (-15), math.degToRad (15),0.01).name(key);
+                        
+                    }
+                    else if(key == "head_z"){
+                        morphs.add(mesh.skeleton.bones[head_index].rotation,"z", math.degToRad (-15), math.degToRad (15),0.01).name(key);
+                        
+                    }
                     else {
                         morphs.add(controls, key, 0.0, 0.0, 0.01).onChange(onChangeMorph);
                     }
+
                     /*
                     if (i != 14) {
                         morphs.add(controls, key, 0.0, 0.0, 0.01).onChange(onChangeMorph);
@@ -264,7 +274,8 @@
                     var buffer = guijson[key]
                     i++;
                 }
-
+                
+                //morphs.add(mesh.skeleton.bones[reye_index].rotation.x, key, 0.0, 1.0, 0.01);
             }
 
             function onChangeMorph() {
@@ -272,10 +283,12 @@
                 for (let i = 0 ; i < keys.length; i++) {
 
                     const key = keys[i];
-                   
+                    
                     const value = controls[key];
                     console.log(guijson[key])
                     mesh.morphTargetInfluences[guijson[key]] = value;
+                    
+                    
                     
                 }
 
@@ -287,7 +300,13 @@
             initMorphs();
 
             onChangeMorph();
-
+           
+            
+            morphs.add(mesh.skeleton.bones[leye_index].rotation,"x", math.degToRad (-8.4), math.degToRad (11.4),0.01).name("Left_Eyes_X");
+            morphs.add(mesh.skeleton.bones[reye_index].rotation,"x",  math.degToRad (-8.4), math.degToRad (11.4),0.01).name("Right_Eyes_X");
+            morphs.add(mesh.skeleton.bones[leye_index].rotation,"y", math.degToRad (-12.6), math.degToRad (8),0.01).name("Left_Eyes_Y");
+            morphs.add(mesh.skeleton.bones[reye_index].rotation,"y",  math.degToRad (-8), math.degToRad (12.6),0.01).name("Right_Eyes_Y");
+           
             morphs.open();
 
         }
@@ -356,6 +375,8 @@
                 }, onProgress, null);
             } else if (event.key === "d" && modelindex < (data_json.modellist.length - 1)) {
                 modelindex += 1;
+                slist = data_json.modellist[modelindex];
+                console.log(slist);
                 scene.remove(mesh);
                 gui.destroy();
 
