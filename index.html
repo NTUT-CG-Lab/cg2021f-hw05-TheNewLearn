@@ -26,7 +26,7 @@
     <script>
         // 建構子 ScoreOutputer 接受一個字串，該字串為 csv 的檔案名稱
         // 以下面範例，檔名就為 "109598105(總分: 6).csv"
-        var so = new ScoreOutputer("109598105");
+        var so = new ScoreOutputer("109aem001");
         so.installCSS(function () {
             // 安裝 bootstrap 的 css，如果在 html 上方引用 bootstrap 5.1.1 的話就不用使用 installCSS ，注意一定要 bootstrap css 5.1.1 版
             // installCSS 接收一個 callback 當作參數，作為成功安裝 bootstrap css 的回呼函式
@@ -77,6 +77,8 @@
         import { OutlineEffect } from './jsm/jsm/effects/OutlineEffect.js';
         import { MMDLoader } from './jsm/jsm/loaders/MMDLoader.js';
         import { MMDAnimationHelper } from './jsm/jsm/animation/MMDAnimationHelper.js';
+        import eyes from './Eyes_position.json' assert { type: "json" };
+        import guijson from './GUI.json' assert { type: "json" };
 
         let camera, scene, renderer, effect;
         let mesh, helper;
@@ -168,7 +170,7 @@
             //
 
             window.addEventListener('resize', onWindowResize);
-            window.addEventListener('keypress',changemodel);
+            window.addEventListener('keypress', changemodel);
             const cameracontrols = new OrbitControls(camera, renderer.domElement);
             cameracontrols.minDistance = 10;
             cameracontrols.maxDistance = 100;
@@ -196,8 +198,9 @@
 
             const controls = {};
             const keys = [];
-
+            const guidata = [];
             const morphs = gui.addFolder('Morphs');
+
 
             function initControls() {
 
@@ -211,6 +214,12 @@
 
             }
 
+            function initguidata() {
+                for (var i in guijson) {
+                    guidata.push(guijson[i]);
+                }
+            }
+            /*
             function initKeys() {
 
                 for (const key in standardlist) {
@@ -220,17 +229,39 @@
                 }
 
             }
+            */
 
             function initMorphs() {
                 //此程式只有eye_happy_wink_left能控制
                 let i = 0;
+                console.log(guijson);
                 for (const key in standardlist) {
+
+                    if (key in guijson && guijson[key] != -1) {
+                        if (guijson[key] != buffer || buffer == "undefind") {
+                            keys.push(key);
+                            morphs.add(controls, key, 0.0, 1.0, 0.01).onChange(onChangeMorph);
+                        }
+                        else {
+                            
+                            morphs.add(controls, key, 0.0, 0.0, 0.01).onChange(onChangeMorph);
+                        }
+
+
+
+                    }
+                    else {
+                        morphs.add(controls, key, 0.0, 0.0, 0.01).onChange(onChangeMorph);
+                    }
+                    /*
                     if (i != 14) {
                         morphs.add(controls, key, 0.0, 0.0, 0.01).onChange(onChangeMorph);
                     }
                     else {
                         morphs.add(controls, key, 0.0, 1.0, 0.01).onChange(onChangeMorph);
                     }
+                    */
+                    var buffer = guijson[key]
                     i++;
                 }
 
@@ -238,13 +269,21 @@
 
             function onChangeMorph() {
                 //此程式只有eye_happy_wink_left能控制
-                const key = keys[14];
-                const value = controls[key];
-                mesh.morphTargetInfluences[0] = value;
+                for (let i = 0 ; i < keys.length; i++) {
+
+                    const key = keys[i];
+                   
+                    const value = controls[key];
+                    console.log(guijson[key])
+                    mesh.morphTargetInfluences[guijson[key]] = value;
+                    
+                }
+
             }
 
             initControls();
-            initKeys();
+            initguidata();
+            //initKeys();
             initMorphs();
 
             onChangeMorph();
@@ -281,13 +320,13 @@
             xmlhttp.send();
         }
         function changemodel(event) {
-            
+
             console.log(data_json.modellist.length);
 
             if (event.key === "a" && modelindex != 0 && modelindex > 0) {
                 modelindex -= 1;
                 scene.remove(mesh);
-            gui.destroy();
+                gui.destroy();
                 function onProgress(xhr) {
 
                     if (xhr.lengthComputable) {
@@ -318,8 +357,8 @@
             } else if (event.key === "d" && modelindex < (data_json.modellist.length - 1)) {
                 modelindex += 1;
                 scene.remove(mesh);
-            gui.destroy();
-                
+                gui.destroy();
+
                 function onProgress(xhr) {
 
                     if (xhr.lengthComputable) {
